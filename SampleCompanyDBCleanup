@@ -1,0 +1,134 @@
+--This code is for purpose of practicING SQL queries for DB creation, manipulation, data retrieval, and simple analysis. 
+-Data Cleanup String exercises on a Employee demographic table with errors using functions.  
+--December 15, 2021 Source Alex the Analyst on Youtube and my own sample code extending from his original samples.
+
+--Create table 
+CREATE TABLE EmployeeErrors (
+EmployeeID varchar(50)
+,FirstName varchar(50)
+,LastName varchar(50)
+)
+
+Insert into EmployeeErrors Values 
+('1001  ', 'Jimbo', 'Halbert')
+,('  1002', 'Pamela', 'Beasely')
+,('1005', 'TOby', 'Flenderson - Fired')
+
+Select *
+From EmployeeErrors
+
+--Use TRIM, LTRIM, RTRIM 
+SELECT EmployeeID, TRIM(EmployeeID) as IDTRIM
+FROM EmployeeErrors
+
+SELECT EmployeeID, LTRIM(EmployeeID) as IDTRIM
+FROM EmployeeErrors
+
+SELECT EmployeeID, RTRIM(EmployeeID) as IDTRIM
+FROM EmployeeErrors
+
+--Using REPLACE 
+SELECT LastName, REPLACE(LastName,'- Fired','') as LastName_Fixed
+FROM EmployeeErrors
+
+SELECT*
+FROM EmployeeErrors
+
+--Using Substring
+SELECT SUBSTRING(FirstName, 1,3) as first_three
+FROM EmployeeErrors
+
+SELECT err.FirstName, SUBSTRING(err.FirstName,1,3) as abbreviation, demo.FirstName, SUBSTRING(demo.FirstName,1,3) as fixed_abbreviation
+FROM EmployeeErrors err
+JOIN EmployeeDemographics demo 
+	ON SUBSTRING(err.FirstName,1,3) = SUBSTRING(demo.FirstName,1,3)
+
+--Upper and Lower case 
+SELECT FirstName, LOWER(Firstname) as lower_case
+FROM EmployeeErrors
+
+SELECT LastName, UPPER(Lastname) as upper_case
+FROM EmployeeErrors
+
+--STORED PROCEDURES can be used by several users 
+
+CREATE PROCEDURE TEST 
+AS 
+SELECT *
+FROM EmployeeDemographics
+
+EXEC TEST
+
+--Create procedure from temp tables 
+CREATE PROCEDURE Temp_Employee
+AS 
+Create table #temp_employee(
+JobTitle varchar(50),
+EmployeePerJob int, 
+AvgAge int,
+AvgSalary int
+)
+
+EXEC Temp_Employee
+
+
+
+--Subqueries examples 
+--in the SELECT statement to use aggregation
+SELECT * 
+FROM EmployeeSalary
+
+--in select statement using a subquery and using over() function to get same output 
+SELECT EmployeeID, Salary, 
+(Select AVG(Salary) FROM EmployeeSalary) as all_avg_salary
+FROM EmployeeSalary
+
+SELECT EmployeeID, Salary, AVG(Salary) over() as all_avg_salary
+FROM EmployeeSalary
+
+SELECT EmployeeID, Salary,
+(SELECT SUM(Salary) FROM EmployeeSalary) as sum_all_salary
+FROM EmployeeSalary
+
+SELECT EmployeeID, Salary,SUM(Salary) over() as sum_all_salary
+FROM EmployeeSalary
+
+SELECT FirstName, LastName, Age, Avg(Age) over() as avg_age_all
+FROM EmployeeDemographics
+
+--Using a subquery find the average age and salary of employees 
+SELECT demo.FirstName, demo.LastName, demo.Age, sal.Salary,
+(SELECT Avg(Age) FROM EmployeeDemographics) AS avg_age,
+(SELECT Avg(Salary) FROM EmployeeSalary) AS avg_salary
+FROM EmployeeDemographics demo 
+JOIN EmployeeSalary sal ON demo.EmployeeID= sal.EmployeeID
+
+--Using the over() get same output as above query 
+SELECT demo.FirstName, demo.LastName, demo.Age, sal.Salary,
+Avg(Age) over() AS avg_age,
+Avg(Salary) over() AS avg_salary
+FROM EmployeeDemographics demo 
+JOIN EmployeeSalary sal ON demo.EmployeeID= sal.EmployeeID
+
+--Subquery in WHERE 
+--Getting a list of employees and avoids joining the tables
+SELECT EmployeeID, JobTitle, Salary
+FROM EmployeeSalary
+WHERE EmployeeID in 
+(SELECT EmployeeID 
+FROM EmployeeDemographics
+WHERE Gender = 'female')
+
+SELECT EmployeeID, JobTitle, Salary
+FROM EmployeeSalary
+WHERE EmployeeID in 
+(SELECT EmployeeID 
+FROM EmployeeDemographics
+WHERE Age > 30)
+
+SELECT EmployeeID, JobTitle, Salary
+FROM EmployeeSalary
+WHERE EmployeeID in 
+(SELECT EmployeeID 
+FROM EmployeeDemographics
+WHERE Salary > 50000)
