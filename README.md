@@ -1,7 +1,9 @@
 # SQL-
-SQL Scripts for Data Retrieval and Analysis
-Three tables representing XYZ Company and performing queries for answering basic business questions. 
---Table 1
+--This code is for purpose of practicING SQL queries for DB creation, manipulation, data retrieval, and simple analysis. 
+--Using several SQL methods and functions for education and practice.
+--December 15, 2021 Source Alex the Analyst on Youtube and my own sample code extending from his original samples.
+
+--1--CREATING TABLES
 CREATE TABLE EmployeeDemographics
 (EmployeeID int, 
 FirstName varchar(50),
@@ -9,13 +11,11 @@ LastName varchar(50),
 Age int,
 Gender varchar(50)
 )
---Table 2 
 CREATE TABLE EmployeeSalary
 (EmployeeID int, 
 JobTitle varchar(50),
 Salary int)
 
---INSERT SAMPLE DATA 
 INSERT INTO EmployeeDemographics VALUES 
 (1001, 'Jim', 'Halpert', 30, 'Male')
 INSERT INTO EmployeeSalary VALUES 
@@ -40,6 +40,11 @@ Insert Into EmployeeSalary VALUES
 (1007, 'Supplier Relations', 41000),
 (1008, 'Salesman', 48000),
 (1009, 'Accountant', 42000)
+--PREVIEW
+SELECT * 
+FROM EmployeeDemographics
+SELECT *
+FROM EmployeeSalary
 
 Insert into EmployeeDemographics VALUES
 (1011, 'Ryan', 'Howard', 26, 'Male'),
@@ -60,22 +65,14 @@ Insert into WareHouseEmployeeDemographics VALUES
 (1051, 'Hidetoshi', 'Hasagawa', 40, 'Male'),
 (1052, 'Val', 'Johnson', 31, 'Female')
 
---Preview 3 DBs
-SELECT * 
-FROM EmployeeDemographics
-SELECT *
-FROM EmployeeSalary
-SELECT * 
-FROM WareHouseEmployeeDemographics
 
---Perform JOINS to preview data 
---JOIN two tables to have employee salary data 
+--JOIN two tables
 SELECT d.FirstName, d.LastName, s.JobTitle, s.Salary
 FROM EmployeeSalary s
 INNER JOIN EmployeeDemographics d ON s.EmployeeID = d.EmployeeID
 ORDER BY s.Salary DESC
 
---JOB TITLE and SALARY VIEW
+--JOB TITLE SALARY VIEW
 SELECT d.FirstName, d.LastName, s.JobTitle, s.Salary
 FROM EmployeeSalary s
 INNER JOIN EmployeeDemographics d ON s.EmployeeID = d.EmployeeID
@@ -93,9 +90,11 @@ ORDER BY Age DESC
 --Total salary per month and annual 
 SELECT SUM(Salary) as Total_Wages_per_month, (SUM(Salary) * 12) as annual_wages
 FROM EmployeeSalary
+
 --average
 SELECT AVG(Salary) as avg_salary 
 FROM EmployeeSalary
+
 --salary range 
 SELECT MAX(Salary) as max_salary, MIN(Salary) as min_salary 
 FROM EmployeeSalary
@@ -114,7 +113,8 @@ INNER JOIN EmployeeSalary
 WHERE Jobtitle = 'Salesman'
 GROUP BY Jobtitle
 
---UNIONS combine two tables ensuring both have same structure in columns and data types 
+
+--UNIONS combine two tables but must have same structure in both columns and data types 
 SELECT *
 FROM EmployeeDemographics
 UNION 
@@ -122,7 +122,15 @@ SELECT *
 FROM WareHouseEmployeeDemographics
 ORDER BY EmployeeID DESC
 
---CASE Statements for Categorizing data  
+----It will combine age and salary in same column 
+SELECT EmployeeID, FirstName, Age 
+FROM EmployeeDemographics
+UNION
+SELECT EmployeeID, JobTitle, Salary 
+FROM EmployeeSalary
+ORDER BY EmployeeID
+
+--CASE Statements 
 SELECT FirstName, Lastname, Age,
 CASE 
 	WHEN Age> 30 THEN 'Old'
@@ -134,7 +142,7 @@ WHERE Age is not null
 Order by Age 
 
 
---CASE FOR CALCULATING A BONUS PER JOBTITLE  
+--CASE FOR BONUS 
 SELECT FirstName, LastName, JobTitle, Salary,
 CASE 
 	WHEN JobTitle= 'Salesman' THEN Salary + (Salary * .10)
@@ -166,6 +174,7 @@ FROM EmployeeDemographics a
 FULL JOIN EmployeeSalary b ON a.EmployeeID = b.EmployeeID
 WHERE Gender = 'Female' 
 
+----CAN ONLY DO A CONDITION WITH AGGREGATION IN HAVING CLAUSE 
 --COUNTS PER JOBTITLE 
 SELECT JobTitle, COUNT(JobTitle) as count_per_title
 FROM EmployeeDemographics
@@ -186,7 +195,7 @@ FROM EmployeeDemographics d
 INNER JOIN EmployeeSalary s ON d.EmployeeID = s.EmployeeID
 GROUP BY JobTitle 
 
---MODIFY A RECORD EXAMPLE 
+--MODIFY A RECORD
 UPDATE EmployeeDemographics
 set EmployeeID= 1012 
 WHERE FirstName= 'Holly' AND LastName = 'Flax'
@@ -194,17 +203,20 @@ WHERE FirstName= 'Holly' AND LastName = 'Flax'
 UPDATE EmployeeDemographics
 set Age = 31, Gender= 'Female'
 WHERE FirstName= 'Holly' AND LastName = 'Flax'
---CHECK CHANGE MADE 
+
 SELECT * 
 FROM WareHouseEmployeeDemographics
 
---THREE TABLE JOIN EXAMPLE 
+--Aliasing and combining columns
+SELECT FirstName+ ' ' + LastName as Full_name
+FROM EmployeeDemographics
+
+--THREE TABLE JOIN 
 SELECT demo.EmployeeID, demo.FirstName, sal.JobTitle, ware.Age
 FROM EmployeeDemographics demo
 LEFT JOIN EmployeeSalary sal ON demo.EmployeeID= sal.EmployeeID
 LEFT JOIN WareHouseEmployeeDemographics ware ON demo.EmployeeID = ware.EmployeeID
 
---COUNTS 
 --Getting the counts per gender available in company 
 SELECT FirstName, LastName, Gender, Salary,
 	COUNT(Gender) OVER(PARTITION BY Gender) as Total_Gender_Count
